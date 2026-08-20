@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(10),
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.string().transform(Number).default('6379'),
+  REDIS_URL: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   VAPID_PUBLIC_KEY: z.string().default('BBmtcvmJ4Cpq9hzo_EZhii6Q5ndlnilEMrwAqk2Y8LB5HSBepmcjL4AMAzW9FaTkp_atMWJKMk2GhVLVu1tO8uk'),
   VAPID_PRIVATE_KEY: z.string().default('A2zyYNQW2mFmTtGaMLow3oLZsX6lySjIfKFT3RwxMbw'),

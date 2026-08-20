@@ -6,12 +6,27 @@ import { sendPushNotificationToUser } from './pushNotification';
 import { sendReminderFallbackEmail } from './emailService';
 import { sendTelegramReminder } from './telegramService';
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
-const redisOptions = { maxRetriesPerRequest: null };
+const redisUrl = process.env.REDIS_URL || (process.env.REDIS_HOST ? `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT || 6379}` : 'redis://127.0.0.1:6379');
+const isTls = redisUrl.startsWith('rediss://');
+const redisOptions: any = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+};
+if (isTls) {
+  redisOptions.tls = { rejectUnauthorized: false };
+}
 
 // Dedicated connections for Queue and Worker as per BullMQ requirements
 const queueConnection = new Redis(redisUrl, redisOptions);
 const workerConnection = new Redis(redisUrl, redisOptions);
+
+queueConnection.on('error', (err) => {
+  console.warn('[BullMQ Redis Queue Error]:', err.message);
+});
+
+workerConnection.on('error', (err) => {
+  console.warn('[BullMQ Redis Worker Error]:', err.message);
+});
 
 export const reminderQueue = new Queue('reminders', { connection: queueConnection });
 

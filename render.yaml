@@ -1,0 +1,43 @@
+services:
+  # JARVIS Backend API & Real-time Socket Server
+  - type: web
+    name: jarvis-backend
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npx prisma db push && npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jarvis-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: jarvis-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        value: BBmtcvmJ4Cpq9hzo_EZhii6Q5ndlnilEMrwAqk2Y8LB5HSBepmcjL4AMAzW9FaTkp_atMWJKMk2GhVLVu1tO8uk
+      - key: VAPID_PRIVATE_KEY
+        value: A2zyYNQW2mFmTtGaMLow3oLZsX6lySjIfKFT3RwxMbw
+      - key: VAPID_SUBJECT
+        value: mailto:support@jarvis-ai.local
+
+databases:
+  - name: jarvis-db
+    plan: free
+    databaseName: jarvis
+    user: jarvis
+
+# Render Redis (Free/Starter)
+# Note: Render Free plan requires Redis or an external free Redis like Upstash
