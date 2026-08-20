@@ -53,3 +53,9 @@ export const emitToUser = (userId: string, event: string, data: any) => {
     io.to(userId).emit(event, data);
   }
 };
+
+export const isUserConnected = (userId: string): boolean => {
+  if (!io) return false;
+  const room = io.sockets.adapter.rooms.get(userId);
+  return !!(room && room.size > 0);
+};

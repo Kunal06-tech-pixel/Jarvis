@@ -1,0 +1,25 @@
+{
+  "name": "JARVIS Stark Intelligence",
+  "short_name": "JARVIS",
+  "description": "Full-duplex AI voice assistant and autonomous productivity suite.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0A0D14",
+  "theme_color": "#10141E",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities", "artificial intelligence"]
+}

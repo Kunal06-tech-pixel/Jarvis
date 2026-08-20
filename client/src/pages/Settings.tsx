@@ -3,7 +3,15 @@ import { useAuthStore } from '@/stores/authStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Globe, Volume2, Play, Ear, Bot, Check, Sliders } from 'lucide-react';
+import { api } from '@/services/api';
+import { User, Globe, Volume2, Play, Ear, Bot, Check, Sliders, Smartphone, Send, AlertTriangle, ShieldCheck, MessageSquare } from 'lucide-react';
+import {
+  getNotificationPermission,
+  getActiveSubscription,
+  subscribeToPush,
+  unsubscribeFromPush,
+  triggerTestPush,
+} from '@/services/pushNotification';
 import {
   VOICE_PERSONAS,
   VoicePersona,
@@ -30,10 +38,47 @@ export default function Settings() {
     return localStorage.getItem('jarvis_wake_phrase') || 'Hey Jarvis';
   });
 
+  // Web Push Settings
+  const [isPushSubscribed, setIsPushSubscribed] = useState<boolean>(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [isPushLoading, setIsPushLoading] = useState<boolean>(false);
+  const [isTestLoading, setIsTestLoading] = useState<boolean>(false);
+
+  const checkPushStatus = async () => {
+    const perm = getNotificationPermission();
+    setPushPermission(perm);
+    if (perm === 'granted') {
+      const sub = await getActiveSubscription();
+      setIsPushSubscribed(!!sub);
+    } else {
+      setIsPushSubscribed(false);
+    }
+  };
+
+  // Telegram Bot Settings
+  const [telegramChatId, setTelegramChatId] = useState<string>('');
+  const [telegramEnabled, setTelegramEnabled] = useState<boolean>(false);
+  const [isTelegramBotConfigured, setIsTelegramBotConfigured] = useState<boolean>(true);
+  const [isTelegramSaving, setIsTelegramSaving] = useState<boolean>(false);
+  const [isTelegramTestLoading, setIsTelegramTestLoading] = useState<boolean>(false);
+
+  const fetchTelegramStatus = async () => {
+    try {
+      const res = await api.get('/telegram/status');
+      setIsTelegramBotConfigured(res.data.data.isBotConfigured);
+      setTelegramChatId(res.data.data.telegramChatId || '');
+      setTelegramEnabled(res.data.data.telegramEnabled || false);
+    } catch (err) {
+      console.warn('[Settings] Could not load Telegram settings:', err);
+    }
+  };
+
   useEffect(() => {
     getSystemVoices().then((voices) => {
       setSystemVoices(voices);
     });
+    checkPushStatus();
+    fetchTelegramStatus();
   }, []);
 
   const handleSelectPersona = (persona: VoicePersona) => {
@@ -83,6 +128,82 @@ export default function Settings() {
     setWakePhrase(phrase);
     localStorage.setItem('jarvis_wake_phrase', phrase);
     toast.success(`Primary wake phrase updated to "${phrase}"`);
+  };
+
+  const handleTogglePush = async () => {
+    setIsPushLoading(true);
+    try {
+      if (isPushSubscribed) {
+        const res = await unsubscribeFromPush();
+        if (res.success) {
+          setIsPushSubscribed(false);
+          toast.success('Device push notifications disabled');
+        } else {
+          toast.error(res.error || 'Failed to disable push');
+        }
+      } else {
+        const res = await subscribeToPush();
+        if (res.success) {
+          setIsPushSubscribed(true);
+          setPushPermission('granted');
+          toast.success('Device Web Push successfully enabled!');
+        } else {
+          toast.error(res.error || 'Failed to subscribe to push');
+          setPushPermission(getNotificationPermission());
+        }
+      }
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
+
+  const handleTestPush = async () => {
+    setIsTestLoading(true);
+    try {
+      const res = await triggerTestPush();
+      if (res.success) {
+        toast.success('Test push notification dispatched to this device');
+      } else {
+        toast.error(res.error || 'Failed to trigger test push');
+      }
+    } finally {
+      setIsTestLoading(false);
+    }
+  };
+
+  const handleSaveTelegram = async () => {
+    setIsTelegramSaving(true);
+    try {
+      const res = await api.post('/telegram/settings', {
+        telegramChatId: telegramChatId.trim(),
+        telegramEnabled,
+      });
+      setTelegramChatId(res.data.data.telegramChatId || '');
+      setTelegramEnabled(res.data.data.telegramEnabled || false);
+      toast.success('Telegram alert preferences saved');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || 'Failed to save Telegram settings');
+    } finally {
+      setIsTelegramSaving(false);
+    }
+  };
+
+  const handleTestTelegram = async () => {
+    if (!telegramChatId.trim()) {
+      toast.error('Please enter your Telegram Chat ID first');
+      return;
+    }
+    setIsTelegramTestLoading(true);
+    try {
+      await api.post('/telegram/test', {
+        telegramChatId: telegramChatId.trim(),
+      });
+      toast.success('Test alert dispatched to your Telegram chat!');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || 'Failed to send Telegram test message');
+    } finally {
+      setIsTelegramTestLoading(false);
+    }
   };
 
   const handleSaveProfile = () => {
@@ -276,7 +397,218 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* 3. User Identity Section */}
+        {/* 3. Real-World Web Push & Device Notifications */}
+        <Card className="minimal-card p-5 bg-[#10141E] border border-white/[0.08]">
+          <CardHeader className="p-0 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#10B981]/15 border border-[#10B981]/30 p-2.5 rounded-xl text-[#10B981]">
+                  <Smartphone className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                    Device-Level Web Push Notifications
+                    {pushPermission === 'unsupported' ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                        Unsupported
+                      </span>
+                    ) : pushPermission === 'denied' ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#FF9F0A]/20 text-[#FF9F0A] border border-[#FF9F0A]/30 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 inline" /> Blocked in Browser
+                      </span>
+                    ) : isPushSubscribed ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3 inline" /> Active & Subscribed
+                      </span>
+                    ) : (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-300 border border-white/10">
+                        Inactive
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-300">
+                    Receive exact-time reminder alerts on your phone or desktop even when the browser tab is closed.
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 space-y-4">
+            <div className="p-3.5 rounded-xl bg-[#141A26] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="text-xs font-semibold text-white">Browser Push Service Status</div>
+                <div className="text-[11px] text-slate-300">
+                  {pushPermission === 'unsupported'
+                    ? 'This browser does not support the Web Push Notification API.'
+                    : pushPermission === 'denied'
+                    ? 'Notifications are blocked in your site settings. Please click the lock/settings icon in your URL bar and allow notifications.'
+                    : isPushSubscribed
+                    ? 'This device is registered with JARVIS VAPID credentials to receive push dispatches.'
+                    : 'Subscribe this device to receive background reminder notifications via service workers.'}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {isPushSubscribed && (
+                  <Button
+                    onClick={handleTestPush}
+                    disabled={isTestLoading || isPushLoading}
+                    variant="outline"
+                    className="h-8 px-3 text-xs bg-white/5 hover:bg-white/10 text-slate-300 border-white/[0.08] rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan"
+                  >
+                    <Send className="h-3.5 w-3.5 mr-1.5 text-electric-cyan" />
+                    {isTestLoading ? 'Sending...' : 'Test Alert'}
+                  </Button>
+                )}
+
+                {pushPermission !== 'unsupported' && (
+                  <Button
+                    onClick={handleTogglePush}
+                    disabled={isPushLoading || pushPermission === 'denied'}
+                    className={`h-8 px-4 text-xs font-semibold rounded-xl transition-all focus-visible:ring-2 focus-visible:ring-electric-cyan ${
+                      isPushSubscribed
+                        ? 'bg-white/10 hover:bg-red-500/20 text-slate-300 hover:text-red-400 border border-white/[0.08] hover:border-red-500/30'
+                        : 'bg-[#10B981] hover:bg-[#10B981]/90 text-[#0A0D14] font-bold shadow-lg shadow-[#10B981]/20'
+                    }`}
+                  >
+                    {isPushLoading
+                      ? 'Processing...'
+                      : isPushSubscribed
+                      ? 'Disable Push'
+                      : 'Enable Device Push'}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              ⚡ <strong className="text-white">Layered Notification Architecture</strong>: Open tabs receive instant real-time Socket.IO alerts with voice synthesis. Closed or backgrounded tabs receive native OS system banners via Web Push service workers.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* 4. Telegram Direct Phone Alerts */}
+        <Card className="minimal-card p-5 bg-[#10141E] border border-white/[0.08]">
+          <CardHeader className="p-0 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#0088cc]/15 border border-[#0088cc]/30 p-2.5 rounded-xl text-[#0088cc]">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+                    Telegram Direct Phone Alerts
+                    {!isTelegramBotConfigured ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#FF9F0A]/20 text-[#FF9F0A] border border-[#FF9F0A]/30 flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3 inline" /> Bot Token Needed in .env
+                      </span>
+                    ) : telegramEnabled && telegramChatId ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/30 flex items-center gap-1">
+                        <ShieldCheck className="h-3 w-3 inline" /> Active & Dispatched
+                      </span>
+                    ) : telegramChatId ? (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-400 border border-white/10">
+                        Paused
+                      </span>
+                    ) : (
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-slate-400 border border-white/10">
+                        Unlinked
+                      </span>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-300">
+                    Receive immediate, high-priority notifications on your phone via Telegram for all scheduled reminders.
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-300">Telegram Phone Alerts</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTelegramEnabled(true)}
+                    className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:outline-none ${
+                      telegramEnabled
+                        ? 'bg-[#0088cc]/20 border-[#0088cc] text-[#38BDF8] font-bold'
+                        : 'bg-[#181F2E] border-white/[0.08] text-slate-400'
+                    }`}
+                  >
+                    ENABLED
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTelegramEnabled(false)}
+                    className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:outline-none ${
+                      !telegramEnabled
+                        ? 'bg-white/10 border-white/20 text-white font-bold'
+                        : 'bg-[#181F2E] border-white/[0.08] text-slate-400'
+                    }`}
+                  >
+                    PAUSED
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-300">Your Telegram Chat ID</label>
+                <Input
+                  value={telegramChatId}
+                  onChange={(e) => setTelegramChatId(e.target.value)}
+                  placeholder="e.g. 123456789"
+                  className="bg-[#181F2E] border-white/[0.08] text-white text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan px-3 h-9 font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-[#141A26] border border-white/[0.08] text-[11px] text-slate-300 space-y-1">
+              <div className="font-semibold text-white flex items-center gap-1.5">
+                <span>💡 How to find your Telegram Chat ID:</span>
+              </div>
+              <div>
+                1. Open Telegram on your phone or desktop and search for <strong>@userinfobot</strong>
+              </div>
+              <div>
+                2. Tap <strong>Start</strong> — it will reply with your personal <strong>Id</strong> (e.g. <code>987654321</code>).
+              </div>
+              <div>
+                3. Paste the ID number above and tap <strong>Save Settings</strong>.
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <p className="text-[11px] text-slate-400">
+                📲 Notifications are delivered with zero battery drain via Telegram Cloud Push.
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={handleTestTelegram}
+                  disabled={isTelegramTestLoading || !telegramChatId.trim()}
+                  variant="outline"
+                  className="h-8 px-3 text-xs bg-white/5 hover:bg-white/10 text-slate-300 border-white/[0.08] rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan"
+                >
+                  <Send className="h-3.5 w-3.5 mr-1.5 text-[#38BDF8]" />
+                  {isTelegramTestLoading ? 'Sending...' : 'Test Telegram Alert'}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveTelegram}
+                  disabled={isTelegramSaving}
+                  className="h-8 px-4 text-xs font-semibold bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan shadow-md shadow-[#0088cc]/20"
+                >
+                  <Check className="h-3.5 w-3.5 mr-1.5" />
+                  {isTelegramSaving ? 'Saving...' : 'Save Settings'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 5. User Identity Section */}
         <Card className="minimal-card p-5 bg-[#10141E] border border-white/[0.08]">
           <CardHeader className="p-0 pb-4">
             <div className="flex items-center gap-3">

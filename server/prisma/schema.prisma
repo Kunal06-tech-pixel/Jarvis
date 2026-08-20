@@ -21,6 +21,7 @@ model User {
   events        Event[]
   conversations Conversation[]
   notifications Notification[]
+  pushSubscriptions PushSubscription[]
   preferences   UserPreference?
   auditLogs     AuditLog[]
 
@@ -37,6 +38,8 @@ model UserPreference {
   ttsEnabled            Boolean  @default(true)
   dailyBriefingTime     String?  @default("08:00")
   weekStartDay          String   @default("monday")
+  telegramChatId        String?
+  telegramEnabled       Boolean  @default(false)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 }
@@ -201,4 +204,18 @@ enum NotificationType {
   EVENT
   AI_SUGGESTION
   SYSTEM
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

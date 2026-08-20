@@ -1,4 +1,5 @@
 import { prisma } from '../db/prisma';
+import { scheduleReminderJob } from './worker';
 
 type ParsedDateTime = {
   value: Date | null;
@@ -208,13 +209,15 @@ export async function processLocalCommand(command: string, userId: string) {
       return 'What date and time should I set the reminder for?';
     }
 
-    await prisma.reminder.create({
+    const reminder = await prisma.reminder.create({
       data: {
         userId,
         title,
         remindAt: parsedTime.value,
       },
     });
+
+    await scheduleReminderJob(reminder);
 
     return `Reminder set for ${parsedTime.value.toLocaleString()}. Anything else?`;
   }

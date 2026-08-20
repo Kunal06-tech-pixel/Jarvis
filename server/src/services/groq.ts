@@ -2,6 +2,7 @@ import Groq, { toFile } from 'groq-sdk';
 import fs from 'fs';
 import { prisma } from '../db/prisma';
 import { processLocalCommand } from './localCommand';
+import { scheduleReminderJob } from './worker';
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || 'MISSING_API_KEY',
@@ -163,6 +164,7 @@ Do not output markdown or long explanations unless asked. Keep it conversational
                   recurrence: args.recurrence || null,
                 }
               });
+              await scheduleReminderJob(reminder);
               functionResult = JSON.stringify({ success: true, reminder });
             }
             else if (functionName === 'create_event') {
