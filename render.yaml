@@ -22,11 +22,11 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: TELEGRAM_BOT_TOKEN
-        value: 8805487961:AAH0iaXxlRx1Dd7Hg8SI8zlSDYFKxy_BTJo
+        sync: false
       - key: VAPID_PUBLIC_KEY
         value: BBmtcvmJ4Cpq9hzo_EZhii6Q5ndlnilEMrwAqk2Y8LB5HSBepmcjL4AMAzW9FaTkp_atMWJKMk2GhVLVu1tO8uk
       - key: VAPID_PRIVATE_KEY
-        value: A2zyYNQW2mFmTtGaMLow3oLZsX6lySjIfKFT3RwxMbw
+        sync: false
       - key: VAPID_SUBJECT
         value: mailto:support@jarvis-ai.local
 
