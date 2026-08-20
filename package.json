@@ -1,0 +1,22 @@
+{
+  "name": "jarvis-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "worker",
+    "shared"
+  ],
+  "scripts": {
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "dev:frontend": "npm run dev -w client",
+    "dev:backend": "npm run dev -w server",
+    "dev:worker": "npm run dev -w worker"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "react-hook-form": "^7.85.0"
+  }
+}

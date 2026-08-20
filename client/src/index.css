@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 36% 6%;        /* #0A0D14 Minimal Matte Obsidian Base */
+    --foreground: 210 40% 98%;       /* #F8FAFC Crisp White */
+    --card: 222 30% 9%;              /* #10141E Matte Card */
+    --card-foreground: 210 40% 98%;
+    --popover: 222 30% 9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221 83% 53%;         /* #2563EB Electric Blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 23% 14%;        /* #1A2130 Dark Pill */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 220 23% 14%;
+    --muted-foreground: 218 14% 53%; /* #7E8B9F */
+    --accent: 199 89% 48%;           /* #0284C7 Cyan */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 348 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.07;
+    --input: 0 0% 100% / 0.08;
+    --ring: 221 83% 53%;
+    --radius: 1.25rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-[#0A0D14] text-foreground font-sans antialiased selection:bg-electric-blue/30 selection:text-white;
+    font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", sans-serif;
+    letter-spacing: -0.01em;
+    background-color: #0A0D14;
+    overflow-x: hidden;
+  }
+}
+
+/* =========================================================================
+   MINIMAL DARK THEME (REFERENCE DESIGN)
+   ========================================================================= */
+@layer utilities {
+  /* Minimal Dark Card Surface */
+  .minimal-card {
+    background-color: #10141E;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+    border-radius: 1.5rem;
+    transition: all 0.25s ease;
+  }
+
+  .minimal-card-interactive {
+    @apply minimal-card cursor-pointer;
+  }
+
+  .minimal-card-interactive:hover {
+    background-color: #141A27;
+    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 25px rgba(37, 99, 235, 0.1);
+  }
+
+  .minimal-card-interactive:active {
+    transform: scale(0.98);
+  }
+
+  /* Minimal Dark Pill Button */
+  .minimal-pill {
+    background-color: #171D2B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+  }
+
+  .minimal-pill:hover {
+    background-color: #1F273A;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+  }
+
+  .minimal-pill:active {
+    transform: scale(0.96);
+  }
+
+  /* Vertical Dock Rail */
+  .minimal-rail {
+    background-color: #0D111A;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Glowing Halo Ring (Reference Centerpiece) */
+  .halo-ring {
+    position: relative;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(10, 13, 20, 0.9) 62%, transparent 70%);
+    box-shadow: 
+      0 0 50px rgba(56, 189, 248, 0.25),
+      0 0 100px rgba(37, 99, 235, 0.2),
+      inset 0 0 20px rgba(56, 189, 248, 0.15);
+  }
+
+  .halo-border-gradient {
+    border-radius: 50%;
+    padding: 3px;
+    background: conic-gradient(
+      from 0deg,
+      #38BDF8 0deg,
+      #2563EB 90deg,
+      rgba(37, 99, 235, 0.1) 180deg,
+      #38BDF8 360deg
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Electric Blue Mic Center Button */
+  .mic-button-main {
+    background: #2563EB;
+    box-shadow: 0 0 30px rgba(37, 99, 235, 0.6), 0 0 60px rgba(37, 99, 235, 0.25);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mic-button-main:hover {
+    background: #3B82F6;
+    box-shadow: 0 0 45px rgba(59, 130, 246, 0.8), 0 0 80px rgba(37, 99, 235, 0.4);
+    transform: scale(1.05);
+  }
+
+  .mic-button-main:active {
+    transform: scale(0.95);
+  }
+
+  /* Compatibility aliases */
+  .liquid-glass {
+    @apply minimal-card;
+  }
+  .liquid-glass-interactive {
+    @apply minimal-card-interactive;
+  }
+  .liquid-pill {
+    @apply minimal-pill;
+  }
+  .visionos-panel {
+    @apply minimal-rail;
+  }
+  .apple-button {
+    @apply minimal-pill;
+  }
+  .glass-panel {
+    @apply minimal-card;
+  }
+  .glass-hud {
+    @apply minimal-pill;
+  }
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
