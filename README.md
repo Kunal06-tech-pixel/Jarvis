@@ -1,7 +1,7 @@
 # Jarvis: AI-Powered Voice Assistant & Productivity Suite
 
-![Jarvis Demo](https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3)
-*(Replace with a screenshot of your dashboard once deployed)*
+<img width="1919" height="936" alt="image" src="https://github.com/user-attachments/assets/0244dbcb-8ff5-40ad-84cf-2c3a6fc3b49e" />
+
 
 **Jarvis** is a full-stack, production-ready AI personal task assistant built to demonstrate modern web engineering, agentic AI workflows, and real-time backend systems. Instead of a basic CRUD to-do app, Jarvis allows you to manage your life via natural language voice commands, automatically parsing intents, detecting scheduling conflicts, and emitting real-time notifications for background jobs.
 
