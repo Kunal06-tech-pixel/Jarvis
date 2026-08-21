@@ -7,10 +7,10 @@ import { api } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { Lock, Mail, ArrowRight, Disc3 } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Disc3, Eye, EyeOff, Sparkles, ShieldCheck, KeyRound } from 'lucide-react';
+import AuthQuantumShowcase from '@/components/auth/AuthQuantumShowcase';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -21,6 +21,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isDemoSigningIn, setIsDemoSigningIn] = useState(false);
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
 
@@ -39,7 +41,7 @@ export default function Login() {
       const { user, token } = response.data;
       
       login(user, token);
-      toast.success('Signed in successfully');
+      toast.success(`Welcome back, ${user.name || 'Commander'}!`);
       navigate('/dashboard');
     } catch (error: any) {
       const errData = error.response?.data?.error;
@@ -50,48 +52,92 @@ export default function Login() {
     }
   };
 
-  const handleDemoLogin = () => {
+  const handleInstantDemoLogin = async () => {
     form.setValue('email', 'demo@jarvis.app');
     form.setValue('password', 'demo1234');
+    
+    setIsDemoSigningIn(true);
+    try {
+      const response = await api.post('/auth/login', {
+        email: 'demo@jarvis.app',
+        password: 'demo1234',
+      });
+      const { user, token } = response.data;
+      login(user, token);
+      toast.success('Instant Demo Access granted!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast.error('Could not authenticate demo user. Please try standard sign-in.');
+    } finally {
+      setIsDemoSigningIn(false);
+    }
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 bg-[#0A0D14] relative select-none">
-      {/* Ambient subtle center glow */}
-      <div className="absolute w-96 h-96 rounded-full bg-electric-blue/[0.08] blur-[120px] pointer-events-none" />
+    <div className="min-h-screen w-full bg-[#060810] text-slate-100 flex flex-col lg:grid lg:grid-cols-12 relative overflow-hidden select-none">
+      {/* LEFT PANE: 3D Interactive Quantum Neural Showcase (Hidden on small mobile, visible on lg) */}
+      <div className="hidden lg:block lg:col-span-7 h-full relative">
+        <AuthQuantumShowcase />
+      </div>
 
-      <Card className="w-full max-w-md minimal-card relative z-10 p-2 bg-[#10141E]/95 border border-white/[0.08] backdrop-blur-xl">
-        <CardHeader className="space-y-3 text-center pb-4 pt-6">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-electric-blue/15 border border-electric-blue/30 text-electric-cyan shadow-[0_0_20px_rgba(37,99,235,0.4)]">
-            <Disc3 className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-xs font-bold tracking-[0.2em] text-white/50 uppercase">JARVIS AI</h2>
-            <CardTitle className="text-xl font-bold tracking-tight text-white mt-1">
-              Sign In to Workspace
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-300 mt-0.5">
-              Enter your credentials to access your voice intelligence core.
-            </CardDescription>
-          </div>
-        </CardHeader>
+      {/* RIGHT PANE: Ultra-Refined Glassmorphic Auth Form Surface */}
+      <div className="flex-1 lg:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative z-10 overflow-y-auto">
+        {/* Ambient Top Glow for Mobile */}
+        <div className="lg:hidden absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-electric-cyan/[0.08] blur-[120px] pointer-events-none" />
 
-        <CardContent className="space-y-4 px-6 pb-4">
+        {/* Top Mini Header on Right Pane */}
+        <div className="flex items-center justify-between pb-6">
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electric-blue/15 border border-electric-blue/30 text-electric-cyan shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+              <Disc3 className="h-5 w-5 animate-spin-slow" />
+            </div>
+            <span className="text-sm font-extrabold tracking-[0.2em] text-white">JARVIS</span>
+          </div>
+
+          <div className="ml-auto">
+            <span className="text-xs text-slate-400">Need an account? </span>
+            <Link
+              to="/register"
+              className="text-xs font-semibold text-electric-cyan hover:text-white transition-colors underline-offset-4 hover:underline"
+            >
+              Sign up
+            </Link>
+          </div>
+        </div>
+
+        {/* Form Container Card */}
+        <div className="my-auto max-w-md w-full mx-auto space-y-7">
+          {/* Header Title */}
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-slate-300">
+              <KeyRound className="h-3 w-3 text-electric-cyan" />
+              <span>SECURE ACCESS PORTAL</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Welcome back
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Enter your credentials to link into your JARVIS intelligence core.
+            </p>
+          </div>
+
+          {/* Form */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-slate-300">Email Address</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-xs font-semibold text-slate-200">Email Address</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-3 h-4 w-4 text-white/40" />
-                        <Input 
-                          placeholder="kunal@jarvis.app" 
-                          {...field} 
-                          className="pl-10 bg-[#181F2E] border-white/[0.08] text-white text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan h-9" 
+                      <div className="relative group">
+                        <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 group-focus-within:text-electric-cyan transition-colors" />
+                        <Input
+                          placeholder="kunal@jarvis.app"
+                          autoComplete="email"
+                          {...field}
+                          className="pl-10 h-10 bg-[#0F1422] border-white/[0.1] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all"
                         />
                       </div>
                     </FormControl>
@@ -104,17 +150,32 @@ export default function Login() {
                 control={form.control}
                 name="password"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-slate-300">Password</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-xs font-semibold text-slate-200">Password</FormLabel>
+                    </div>
                     <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-3 h-4 w-4 text-white/40" />
-                        <Input 
-                          type="password" 
-                          placeholder="••••••••" 
-                          {...field} 
-                          className="pl-10 bg-[#181F2E] border-white/[0.08] text-white text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan h-9" 
+                      <div className="relative group">
+                        <Lock className="absolute left-3.5 top-3 h-4 w-4 text-slate-400 group-focus-within:text-electric-cyan transition-colors" />
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          {...field}
+                          className="pl-10 pr-10 h-10 bg-[#0F1422] border-white/[0.1] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage className="text-[11px] text-[#FF453A]" />
@@ -122,47 +183,73 @@ export default function Login() {
                 )}
               />
 
+              {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-electric-blue hover:bg-electric-blue/90 text-white font-semibold text-xs py-2 rounded-xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 h-9 mt-2 focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-[#0A0D14]"
+                disabled={isLoading || isDemoSigningIn}
+                className="w-full h-10 bg-gradient-to-r from-electric-blue via-[#2563EB] to-cyan-500 hover:from-electric-blue/90 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 focus-visible:ring-2 focus-visible:ring-electric-cyan"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Authenticating...
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span>Authorizing Keystore...</span>
                   </span>
                 ) : (
                   <>
-                    <span>Sign In</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <span>Sign In to Core</span>
+                    <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </Button>
             </form>
           </Form>
 
-          {/* Quick Demo Login Preset Button */}
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="w-full text-center text-xs text-electric-cyan hover:text-white transition-colors py-1 focus-visible:outline-none focus-visible:underline"
-            >
-              Fill Demo Credentials
-            </button>
+          {/* Divider */}
+          <div className="relative flex items-center justify-center py-1">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/[0.08]" />
+            </div>
+            <div className="relative px-3 bg-[#060810] text-[10px] uppercase font-mono tracking-widest text-slate-500">
+              OR EXPLORE INSTANTLY
+            </div>
           </div>
-        </CardContent>
 
-        <CardFooter className="flex justify-center border-t border-white/[0.06] pt-4 pb-4">
-          <p className="text-xs text-slate-400">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-electric-cyan font-semibold hover:text-white transition-colors focus-visible:outline-none focus-visible:underline">
-              Create one
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+          {/* 1-Click Instant Demo Access Button */}
+          <button
+            type="button"
+            onClick={handleInstantDemoLogin}
+            disabled={isDemoSigningIn || isLoading}
+            className="w-full p-3 rounded-xl bg-[#0F1424] hover:bg-[#151C30] border border-white/[0.08] hover:border-electric-cyan/40 transition-all flex items-center justify-between text-left group shadow-sm focus:outline-none focus:ring-2 focus:ring-electric-cyan"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-electric-cyan/15 border border-electric-cyan/30 flex items-center justify-center text-electric-cyan group-hover:scale-105 transition-transform">
+                <Sparkles className="h-4 w-4 animate-pulse" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white group-hover:text-electric-cyan transition-colors flex items-center gap-1.5">
+                  1-Click Instant Demo
+                  <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-slate-300">
+                    No Setup
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  Preloads <code>demo@jarvis.app</code> with active reminders
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-electric-cyan group-hover:translate-x-0.5 transition-all" />
+          </button>
+        </div>
+
+        {/* Footer Security Badge */}
+        <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-500 font-mono">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+            <span>256-BIT SSL ENCRYPTED</span>
+          </div>
+          <span>JARVIS PROTOCOL</span>
+        </div>
+      </div>
     </div>
   );
 }
