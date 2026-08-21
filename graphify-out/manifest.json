@@ -666,15 +666,15 @@
     "semantic_hash": "afaac640f68d5d39fca84906e2e70b02"
   },
   "client/src/pages/Login.tsx": {
-    "mtime": 1787299253.498283,
-    "seen": 1787299471.6581502,
-    "ast_hash": "7b1750e95ac8ad6ae3cb515822106649",
+    "mtime": 1787300326.1439016,
+    "seen": 1787300477.1585562,
+    "ast_hash": "5298206fae42252ebc1aca1ff3adef7a",
     "semantic_hash": ""
   },
   "client/src/pages/Register.tsx": {
-    "mtime": 1787299223.563327,
-    "seen": 1787299471.6581502,
-    "ast_hash": "dd38466fa96de5607ea7021043aeeba5",
+    "mtime": 1787300343.0527067,
+    "seen": 1787300477.1585562,
+    "ast_hash": "636ede39db00325dbdf5b791276ffa57",
     "semantic_hash": ""
   },
   "client/src/pages/Reminders.tsx": {
@@ -1350,9 +1350,9 @@
     "semantic_hash": ""
   },
   "client/src/components/auth/AuthQuantumShowcase.tsx": {
-    "mtime": 1787299246.3578222,
-    "seen": 1787299471.654725,
-    "ast_hash": "e4f18c4be2ada0149db9f398bbb55f29",
+    "mtime": 1787300309.635888,
+    "seen": 1787300477.1555574,
+    "ast_hash": "15a13d672a865befb509f6be88cd0b5c",
     "semantic_hash": ""
   },
   "client/vercel.json": {
@@ -1371,6 +1371,12 @@
     "mtime": 1787238893.2409716,
     "seen": 1787299471.6766167,
     "ast_hash": "3aebc1f298984bce2cd85b937449a647",
+    "semantic_hash": ""
+  },
+  "client/src/components/auth/QuantumSphereCanvas.tsx": {
+    "mtime": 1787300296.9704854,
+    "seen": 1787300477.1555574,
+    "ast_hash": "90979dd331e1d46bfd3b88e46d4a01da",
     "semantic_hash": ""
   }
 }

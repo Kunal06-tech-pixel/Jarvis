@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { useEffect, useState } from 'react';
 import { Cpu, ShieldCheck, Zap, Radio, Sparkles, Activity } from 'lucide-react';
+import QuantumSphereCanvas from './QuantumSphereCanvas';
 
 export default function AuthQuantumShowcase() {
-  const mountRef = useRef<HTMLDivElement>(null);
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
 
   const capabilities = [
@@ -40,163 +39,6 @@ export default function AuthQuantumShowcase() {
     }, 4500);
     return () => clearInterval(timer);
   }, [capabilities.length]);
-
-  // Three.js Quantum Neural Core
-  useEffect(() => {
-    const container = mountRef.current;
-    if (!container) return;
-
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    camera.position.z = 18;
-
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-
-    // Group for entire rotating core
-    const coreGroup = new THREE.Group();
-    scene.add(coreGroup);
-
-    // 1. Inner Glowing Wireframe Icosahedron (Neural Nucleus)
-    const innerGeo = new THREE.IcosahedronGeometry(4.2, 2);
-    const innerMat = new THREE.MeshBasicMaterial({
-      color: 0x00f0ff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
-    coreGroup.add(innerMesh);
-
-    // 2. Middle Quantum Ring (Gyroscopic Gimbal)
-    const torusGeo = new THREE.TorusGeometry(6.2, 0.08, 16, 100);
-    const torusMat = new THREE.MeshBasicMaterial({
-      color: 0x3b82f6,
-      transparent: true,
-      opacity: 0.6,
-    });
-    const torusMesh = new THREE.Mesh(torusGeo, torusMat);
-    torusMesh.rotation.x = Math.PI / 3;
-    coreGroup.add(torusMesh);
-
-    const torusGeo2 = new THREE.TorusGeometry(6.8, 0.06, 16, 100);
-    const torusMat2 = new THREE.MeshBasicMaterial({
-      color: 0x8b5cf6,
-      transparent: true,
-      opacity: 0.45,
-    });
-    const torusMesh2 = new THREE.Mesh(torusGeo2, torusMat2);
-    torusMesh2.rotation.y = Math.PI / 4;
-    coreGroup.add(torusMesh2);
-
-    // 3. Ambient Particle Constellation Swarm
-    const particleCount = 220;
-    const particleGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const scales = new Float32Array(particleCount);
-
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      const radius = 7 + Math.random() * 6;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(Math.random() * 2 - 1);
-
-      positions[i] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i + 2] = radius * Math.cos(phi);
-      scales[i / 3] = Math.random();
-    }
-
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x38bdf8,
-      size: 0.28,
-      transparent: true,
-      opacity: 0.7,
-      blending: THREE.AdditiveBlending,
-    });
-    const particleSystem = new THREE.Points(particleGeo, particleMat);
-    coreGroup.add(particleSystem);
-
-    // Mouse interaction parallax
-    let targetRotationX = 0;
-    let targetRotationY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      targetRotationY = x * 0.4;
-      targetRotationX = -y * 0.3;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    // Animation Loop
-    let animationFrameId: number;
-    let clock = new THREE.Clock();
-
-    const animateScene = () => {
-      animationFrameId = requestAnimationFrame(animateScene);
-      const elapsedTime = clock.getElapsedTime();
-
-      // Smooth core rotations
-      innerMesh.rotation.y = elapsedTime * 0.18;
-      innerMesh.rotation.x = elapsedTime * 0.12;
-
-      torusMesh.rotation.z = elapsedTime * 0.25;
-      torusMesh2.rotation.x = elapsedTime * -0.2;
-
-      particleSystem.rotation.y = elapsedTime * 0.05;
-
-      // Soft spring easing towards mouse
-      coreGroup.rotation.y += (targetRotationY - coreGroup.rotation.y) * 0.05;
-      coreGroup.rotation.x += (targetRotationX - coreGroup.rotation.x) * 0.05;
-
-      renderer.render(scene, camera);
-    };
-
-    animateScene();
-
-    // Resize Handler
-    const handleResize = () => {
-      if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-      renderer.dispose();
-      innerGeo.dispose();
-      innerMat.dispose();
-      torusGeo.dispose();
-      torusMat.dispose();
-      torusGeo2.dispose();
-      torusMat2.dispose();
-      particleGeo.dispose();
-      particleMat.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
-      }
-    };
-  }, []);
 
   const ActiveIcon = capabilities[activeFeatureIndex].icon;
 
@@ -236,7 +78,7 @@ export default function AuthQuantumShowcase() {
 
       {/* 3. Center Interactive 3D Quantum Core Display */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center min-h-[340px] my-4">
-        <div ref={mountRef} className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" />
+        <QuantumSphereCanvas className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing" />
         
         <div className="relative z-20 pointer-events-none text-center max-w-md mx-auto space-y-2 mt-auto pb-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] backdrop-blur-md text-[11px] text-electric-cyan font-mono">

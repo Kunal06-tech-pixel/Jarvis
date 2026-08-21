@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from 'sonner';
 import { Lock, Mail, User, ArrowRight, Disc3, Eye, EyeOff, ShieldCheck, Sparkles, UserPlus } from 'lucide-react';
 import AuthQuantumShowcase from '@/components/auth/AuthQuantumShowcase';
+import QuantumSphereCanvas from '@/components/auth/QuantumSphereCanvas';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -56,27 +57,33 @@ export default function Register() {
 
   return (
     <div className="min-h-screen w-full bg-[#060810] text-slate-100 flex flex-col lg:grid lg:grid-cols-12 relative overflow-hidden select-none">
-      {/* LEFT PANE: 3D Interactive Quantum Neural Showcase (Hidden on small mobile, visible on lg) */}
-      <div className="hidden lg:block lg:col-span-7 h-full relative">
+      {/* MOBILE / TABLET 3D QUANTUM SPHERE BACKDROP (Visible on < lg screens) */}
+      <div className="lg:hidden fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Ambient Center Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-electric-cyan/[0.12] blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-indigo-600/[0.14] blur-[130px]" />
+        {/* Full Viewport 3D Quantum Sphere */}
+        <QuantumSphereCanvas className="w-full h-full opacity-85" cameraDistance={13.5} />
+      </div>
+
+      {/* DESKTOP LEFT PANE: Full Interactive 3D Showcase */}
+      <div className="hidden lg:block lg:col-span-7 h-full relative z-10">
         <AuthQuantumShowcase />
       </div>
 
       {/* RIGHT PANE: Ultra-Refined Glassmorphic Registration Form Surface */}
-      <div className="flex-1 lg:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-14 relative z-10 overflow-y-auto">
-        {/* Ambient Top Glow for Mobile */}
-        <div className="lg:hidden absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-electric-cyan/[0.08] blur-[120px] pointer-events-none" />
-
+      <div className="flex-1 lg:col-span-5 flex flex-col justify-between p-4 sm:p-8 lg:p-14 relative z-10 overflow-y-auto min-h-screen">
         {/* Top Mini Header on Right Pane */}
-        <div className="flex items-center justify-between pb-6">
+        <div className="flex items-center justify-between pb-4 sm:pb-6">
           <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electric-blue/15 border border-electric-blue/30 text-electric-cyan shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-electric-blue/20 border border-electric-blue/40 text-electric-cyan shadow-[0_0_20px_rgba(0,240,255,0.4)] backdrop-blur-md">
               <Disc3 className="h-5 w-5 animate-spin-slow" />
             </div>
             <span className="text-sm font-extrabold tracking-[0.2em] text-white">JARVIS</span>
           </div>
 
           <div className="ml-auto">
-            <span className="text-xs text-slate-400">Already registered? </span>
+            <span className="text-xs text-slate-300">Already registered? </span>
             <Link
               to="/login"
               className="text-xs font-semibold text-electric-cyan hover:text-white transition-colors underline-offset-4 hover:underline"
@@ -86,18 +93,18 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Form Container Card */}
-        <div className="my-auto max-w-md w-full mx-auto space-y-6">
+        {/* Form Container Card - Frosted Glass on Mobile, Clean Split on Desktop */}
+        <div className="my-auto max-w-md w-full mx-auto space-y-6 p-6 sm:p-8 rounded-3xl bg-[#090D18]/75 lg:bg-transparent backdrop-blur-2xl lg:backdrop-blur-none border border-white/[0.12] lg:border-none shadow-[0_20px_70px_rgba(0,0,0,0.85)] lg:shadow-none transition-all">
           {/* Header Title */}
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-slate-300">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-[11px] font-mono text-slate-300 backdrop-blur-md">
               <UserPlus className="h-3 w-3 text-electric-cyan" />
               <span>NEW PROTOCOL INITIALIZATION</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">
               Create your account
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-300">
               Provision a personal AI voice assistant with multi-channel background sync.
             </p>
           </div>
@@ -118,7 +125,7 @@ export default function Register() {
                           placeholder="Kunal Das"
                           autoComplete="name"
                           {...field}
-                          className="pl-10 h-10 bg-[#0F1422] border-white/[0.1] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all"
+                          className="pl-10 h-10 bg-[#0F1422]/90 border-white/[0.12] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all backdrop-blur-md"
                         />
                       </div>
                     </FormControl>
@@ -140,7 +147,7 @@ export default function Register() {
                           placeholder="kunal@jarvis.app"
                           autoComplete="email"
                           {...field}
-                          className="pl-10 h-10 bg-[#0F1422] border-white/[0.1] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all"
+                          className="pl-10 h-10 bg-[#0F1422]/90 border-white/[0.12] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all backdrop-blur-md"
                         />
                       </div>
                     </FormControl>
@@ -163,7 +170,7 @@ export default function Register() {
                           placeholder="At least 6 characters"
                           autoComplete="new-password"
                           {...field}
-                          className="pl-10 pr-10 h-10 bg-[#0F1422] border-white/[0.1] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all"
+                          className="pl-10 pr-10 h-10 bg-[#0F1422]/90 border-white/[0.12] text-white placeholder:text-slate-500 text-xs rounded-xl focus-visible:ring-2 focus-visible:ring-electric-cyan focus-visible:border-electric-cyan/80 transition-all backdrop-blur-md"
                         />
                         <button
                           type="button"
@@ -188,7 +195,7 @@ export default function Register() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-10 bg-gradient-to-r from-electric-blue via-[#2563EB] to-cyan-500 hover:from-electric-blue/90 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 focus-visible:ring-2 focus-visible:ring-electric-cyan"
+                className="w-full h-10 bg-gradient-to-r from-electric-blue via-[#2563EB] to-cyan-500 hover:from-electric-blue/90 hover:to-cyan-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mt-2 focus-visible:ring-2 focus-visible:ring-electric-cyan"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -206,12 +213,12 @@ export default function Register() {
           </Form>
 
           {/* Feature Highlights Grid */}
-          <div className="pt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
-            <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center gap-2">
+          <div className="pt-2 grid grid-cols-2 gap-2 text-[11px] text-slate-300 font-medium">
+            <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center gap-2 backdrop-blur-md">
               <Sparkles className="h-3.5 w-3.5 text-electric-cyan shrink-0" />
               <span>Voice AI Synthesis</span>
             </div>
-            <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.05] flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center gap-2 backdrop-blur-md">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
               <span>Zero Drift Jobs</span>
             </div>
@@ -219,7 +226,7 @@ export default function Register() {
         </div>
 
         {/* Footer Security Badge */}
-        <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-500 font-mono">
+        <div className="pt-4 sm:pt-6 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-slate-400 font-mono">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             <span>ENCRYPTED PROTOCOL</span>
